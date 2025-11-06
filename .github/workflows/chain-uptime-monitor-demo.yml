@@ -41,7 +41,7 @@ jobs:
 
       - name: Copy config to monitoring repo
         run: |
-          cp arbitrum-portal/packages/arb-token-bridge-ui/__auto-generated-orbit-chains.json \
+          cp arbitrum-portal/packages/arb-token-bridge-ui/public/__auto-generated-orbit-chains.json \
              arbitrum-monitoring/config.json
 
       - name: Run chain uptime monitor with InfluxDB
