@@ -23,6 +23,8 @@ jobs:
 
       - name: Install dependencies (Portal)
         run: cd arbitrum-portal && yarn install
+        env:
+          NEXT_PUBLIC_INFURA_KEY=${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
 
       - name: Checkout Arbitrum Monitoring repository
         uses: actions/checkout@v4
@@ -36,9 +38,6 @@ jobs:
 
       - name: Generate Orbit chains config
         run: cd arbitrum-portal && yarn workspace arb-token-bridge-ui generateOrbitChainsToMonitor
-        env:
-          NEXT_PUBLIC_INFURA_KEY=${{ secrets.NEXT_PUBLIC_INFURA_KEY }}
-
 
       - name: Copy config to monitoring repo
         run: |
