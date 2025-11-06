@@ -3,7 +3,7 @@ name: Chain Uptime Monitor
 on:
   workflow_dispatch:
   schedule:
-  - cron: '*/20 * * * *' # Run every 20 minutes
+  - cron: '20 * * * *' # Run every 20 minutes
 
 jobs:
   run-monitoring:
