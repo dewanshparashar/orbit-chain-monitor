@@ -3,7 +3,7 @@ name: Chain Uptime Monitor
 on:
   workflow_dispatch:
   schedule:
-    - cron: '*/10 * * * *' # Run every 10 minutes
+  - cron: '*/20 * * * *' # Run every 20 minutes
 
 jobs:
   run-monitoring:
@@ -15,14 +15,26 @@ jobs:
         with:
           repository: OffchainLabs/arbitrum-portal
           path: arbitrum-portal
+          fetch-depth: 1
 
       - name: Setup Node.js
         uses: actions/setup-node@v5
         with:
           node-version: 22
+          cache: 'yarn'
+          cache-dependency-path: |
+            arbitrum-portal/yarn.lock
+            arbitrum-monitoring/yarn.lock
 
+      - name: Cache Portal dependencies
+        uses: actions/cache@v4
+        with:
+          path: arbitrum-portal/node_modules
+          key: ${{ runner.os }}-portal-yarn-${{ hashFiles('arbitrum-portal/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-portal-yarn-
       - name: Install dependencies (Portal)
-        run: cd arbitrum-portal && yarn install  
+        run: cd arbitrum-portal && yarn install
 
       - name: Checkout Arbitrum Monitoring repository
         uses: actions/checkout@v4
@@ -30,7 +42,15 @@ jobs:
           repository: OffchainLabs/arbitrum-monitoring
           ref: chain-uptime-monitor
           path: arbitrum-monitoring
+          fetch-depth: 1
 
+      - name: Cache Monitoring dependencies
+        uses: actions/cache@v4
+        with:
+          path: arbitrum-monitoring/node_modules
+          key: ${{ runner.os }}-monitoring-yarn-${{ hashFiles('arbitrum-monitoring/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-monitoring-yarn-
       - name: Install dependencies (Monitoring)
         run: cd arbitrum-monitoring && yarn install
 
