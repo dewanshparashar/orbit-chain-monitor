@@ -1,0 +1,53 @@
+name: Chain Uptime Monitor
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '*/10 * * * *' # Run every 10 minutes
+
+jobs:
+  run-monitoring:
+    name: Chain Uptime Monitor
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Arbitrum Portal repository
+        uses: actions/checkout@v4
+        with:
+          repository: OffchainLabs/arbitrum-portal
+          path: arbitrum-portal
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      - name: Install dependencies (Portal)
+        run: cd arbitrum-portal && yarn install
+
+      - name: Checkout Arbitrum Monitoring repository
+        uses: actions/checkout@v4
+        with:
+          repository: OffchainLabs/arbitrum-monitoring
+          ref: chain-uptime-monitor
+          path: arbitrum-monitoring
+
+      - name: Install dependencies (Monitoring)
+        run: cd arbitrum-monitoring && yarn install
+
+      - name: Generate Orbit chains config
+        run: cd arbitrum-portal && yarn workspace arb-token-bridge-ui generateOrbitChainsToMonitor
+
+      - name: Copy config to monitoring repo
+        run: |
+          cp arbitrum-portal/packages/arb-token-bridge-ui/__auto-generated-orbit-chains.json \
+             arbitrum-monitoring/config.json
+
+      - name: Run chain uptime monitor with InfluxDB
+        run: |
+          cd arbitrum-monitoring
+          yarn chain-uptime-monitor --writeToInfluxDB
+        env:
+          INFLUXDB_URL: ${{ secrets.INFLUXDB_URL }}
+          INFLUXDB_TOKEN: ${{ secrets.INFLUXDB_TOKEN }}
+          INFLUXDB_ORG: ${{ secrets.INFLUXDB_ORG }}
+          INFLUXDB_BUCKET: ${{ secrets.INFLUXDB_BUCKET }}
